@@ -76,8 +76,10 @@ class Fminsearch:
 
     def do_optimise_T(self, t1, data = None):
 
+        print("data before")
+        print(self.data)
         if data is None:
-            data = np.float32(self.data[4::5,:])
+            data = np.float32(self.data[:,:])
         tf = np.asmatrix(self.tfs)
 
 
@@ -95,7 +97,9 @@ class Fminsearch:
 
         # data = data[(0,1,2,4,5),:]
         # tf = tf[(0,1,2,4,5),:]
+        print("printing data")
         print data
+        print("camera poses")
         print tf
 
         objectiveFunLambda = lambda x: self.objectiveFunTransformation(x, data, tf)
@@ -198,12 +202,13 @@ if __name__ == "__main__":
 
 
     optim = Fminsearch()
-    optim.load_set("./poses_ex.txt", "./tfs_ex.txt")
+    #optim.load_set("./poses_ex.txt", "./tfs_ex.txt")
+    #optim.load_set("./poses_ex_optitrack.txt", "./tfs_ex_optitrack.txt")
+    optim.load_set("../output/poses_tfs.txt", "../output/base_tfs.txt")
 
-
-    t1 = np.asarray([-0.033,-0.017,0.075,0,0,0.7068252, 0.7073883])
+    # t1 = np.asarray([-0.033,-0.017,0.075,0,0,0.7068252, 0.7073883])
     # t1 = np.asarray([0.03,0,0.08,0,0,0., 1.])
-    # t1 = np.asarray([0,0,0,0,0,0,1])
+    t1 = np.asarray([0,0,0,0,0,0,1])
     topt, f = optim.do_optimise_T(t1)
 
     q = topt[3:]
@@ -211,25 +216,13 @@ if __name__ == "__main__":
 
     topt[3:] = q
 
+    print("Optimal transformation")
     print(topt)
 
     print("dissipation with T used:")
     print(optim.dissipation(t1)/30.)
     print("dissipation with T optimized:")
     print(optim.dissipation(topt)/30.)
-
-    t1 = np.asarray([0,0,0,0,0,0,1])
-    topt, f = optim.do_optimise_T(t1)
-    q = topt[3:]
-    q /= np.linalg.norm(q)
-    topt[3:] = q
-    print(topt)
-
-    print("dissipation with T zero:")
-    print(optim.dissipation(t1)/30.)
-    print("dissipation with T optimized:")
-    print(optim.dissipation(topt)/30.)
-
 
     # p1 = [0,0,0]
     # r1 = np.eye(3)

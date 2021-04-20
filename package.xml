@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>camera_calib</name>
+  <name>transform_optimizer</name>
   <version>0.0.0</version>
-  <description>The camera_calib package</description>
+  <description>The package for estimating base_link - camera transformations</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

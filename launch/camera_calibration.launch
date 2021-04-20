@@ -1,0 +1,20 @@
+<launch>
+
+  <arg name="namespace"       default="red"/>
+  <arg name="odometry"        default="odometry"/>
+  <arg name="detected_pose"   default="mood/filtered_pose"/>
+  <arg name="base_file"       default="$(find transform_optimizer)/output/base_tfs.txt"/>
+  <arg name="poses_file"      default="$(find transform_optimizer)/output/poses_tfs.txt"/>
+
+  <node pkg="transform_optimizer" type="camera_calibration.py" name="camera_calibration"
+    output="screen" ns="$(arg namespace)">
+
+    <param name="base_file"   value="$(arg base_file)"/>
+    <param name="poses_file"  value="$(arg poses_file)"/>
+    
+    <remap from="odometry"      to="$(arg odometry)"/>
+    <remap from="detected_pose" to="$(arg detected_pose)"/>
+
+  </node>
+
+</launch>
