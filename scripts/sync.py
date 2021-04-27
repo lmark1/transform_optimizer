@@ -32,8 +32,8 @@ class RsListener(object):
 
     self.tfBuffer = tf2_ros.Buffer()
     self.listener = tf2_ros.TransformListener(self.tfBuffer)
-    self.base_frame = "panda_link0"
-    self.eef_frame = "panda_hand"
+    self.base_frame = "base_link"
+    self.eef_frame = "optitrack"
 
     self.pcmsg = None
     self.imgmsg = None
@@ -70,9 +70,8 @@ class RsListener(object):
           self.tf = self.tfBuffer.lookup_transform(self.base_frame, self.eef_frame, rospy.Time())
           self.flag_record = True
       except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-          rospy.logwarn("Error looking up transform from base frame: ", self.base_frame, \
-          " to eef frame: ", self.eef_frame, ". Check TF publisher.")
-          self.flag_record = False
+          rospy.logwarn("Error looking up transform from base frame: {}  to eef frame: {}. Check TF publisher.".format(self.base_frame, self.eef_frame))
+          self.flag_record = msg.data 
 
       print("did we get tf?")
       print(self.flag_record)
@@ -84,12 +83,12 @@ class RsListener(object):
       print(self.points)
       print(self.tfs)
 
-      with open("poses.txt", "w+") as f:
+      with open("poses_optitrack.txt", "w+") as f:
           for points in self.points:
               writer = csv.writer(f)
               writer.writerows(points)
 
-      with open("tfs.txt", "w+") as f:
+      with open("tfs_optitrack.txt", "w+") as f:
           for tf in self.tfs:
               f.write("translation: \n")
               t = tf.transform.translation
@@ -126,17 +125,17 @@ def main():
 
                 cv_image = listener.bridge.imgmsg_to_cv2(listener.imgmsg, desired_encoding='passthrough')
                 gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-
+                print("Hello from detector")
                 tags = listener.detector.detect(gray)
                 if len(tags) > 0:
                 # try:
                     corners = np.transpose(tags[0].corners)
 
-                    # print("found apriltags:")
-                    # print("no: ", len(tags))
-                    # print(tags)
+                    print("found apriltags:")
+                    print("no: ", len(tags))
+                    #print(tags)
 
-                    # print(corners)
+                    #print(corners)
 
                     x = corners[0,:]
                     y = corners[1,:]
@@ -153,13 +152,10 @@ def main():
                     pcarray = pc2_np.pointcloud2_to_array(listener.pcmsg)
 
                     points = []
-                    for ix,iy in zip(x, y):
-                        p = []
-                        ptem = pcarray[iy, ix]
-                        for idim in range(3):
-                            p.append(ptem[idim])
-                        # p = pcarray[iy, ix][0:3]
-                        points.append(p)
+                    last_x = x[4]
+                    last_y = y[4]
+                    point = pcarray[last_x, last_y]
+                    points.append([point[0], point[1], point[2]])
 
                     print(points)
 
@@ -175,6 +171,7 @@ def main():
 
                 # except IndexError:
                 else:
+                    print("Unable to detect apriltag") 
                     listener.flag_record = True
                     pass
 
