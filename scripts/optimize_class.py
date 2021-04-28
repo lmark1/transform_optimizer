@@ -235,12 +235,13 @@ if __name__ == "__main__":
 
     optim = Fminsearch()
     #optim.load_set("./poses_ex.txt", "./tfs_ex.txt")
-    optim.load_set("./poses_optitrack_0001.txt", "./tfs_optitrack_0001.txt")
-    #optim.load_set("../output/poses_tfs.txt", "../output/base_tfs.txt")
+    #optim.load_set("./poses_optitrack_0001.txt", "./tfs_optitrack_0001.txt")
 
-    t1 = np.asarray([-0.033,-0.017,0.075,0,0,-0.7068252, 0.7073883])
+    optim.load_set("../output/poses_tfs_blob.txt", "../output/base_tfs_blob.txt")
+
+    #t1 = np.asarray([-0.033,-0.017,0.075,0,0,-0.7068252, 0.7073883])
     # t1 = np.asarray([0.03,0,0.08,0,0,0., 1.])
-    # t1 = np.asarray([0,0,0,0,0,0,1])
+    t1 = np.asarray([0,0,0,0,0,0,1])
     for i in range(10):
         topt, f = optim.do_optimise_T(t1)
 

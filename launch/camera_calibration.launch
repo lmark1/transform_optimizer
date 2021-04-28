@@ -3,8 +3,8 @@
   <arg name="namespace"       default="red"/>
   <arg name="odometry"        default="odometry"/>
   <arg name="detected_pose"   default="mood/filtered_pose"/>
-  <arg name="base_file"       default="$(find transform_optimizer)/output/base_tfs.txt"/>
-  <arg name="poses_file"      default="$(find transform_optimizer)/output/poses_tfs.txt"/>
+  <arg name="base_file"       default="$(find transform_optimizer)/output/base_tfs_blob.txt"/>
+  <arg name="poses_file"      default="$(find transform_optimizer)/output/poses_tfs_blob.txt"/>
 
   <node pkg="transform_optimizer" type="camera_calibration.py" name="camera_calibration"
     output="screen" ns="$(arg namespace)">
