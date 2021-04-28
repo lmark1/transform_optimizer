@@ -10,7 +10,8 @@ import random
 import csv
 
 import tf2_ros
-
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 class Fminsearch:
     def __init__(self, *args):
@@ -152,6 +153,36 @@ class Fminsearch:
 
         return f
 
+    def transformInputData(self, posquat, data = None):
+        if data is None:
+            data = self.data
+        data_tf = np.asmatrix(self.tfs)
+
+        data_pos = []
+        [l, m] = np.shape(data)
+        for row in data:
+            new_row = []
+            for i in row:
+                new_row.append(i)
+            new_row.append(1.)
+            data_pos.append(np.asarray(new_row))
+        data_pos = np.asmatrix(data_pos)
+
+        Tx = np.asmatrix(quaternion_matrix(posquat[3:]))
+        Tx[0:3, 3] = np.resize(posquat[0:3], (3,1))
+
+        [l, m] = np.shape(data_tf)
+        Teef = np.zeros((l,4,4))
+        for i in range(l):
+            Teef[i,:,:] = np.asmatrix(quaternion_matrix(np.asarray(data_tf)[i,3:]))
+            Teef[i,0:3,3] = np.asarray(data_tf)[i,0:3]
+
+        [l, m] = np.shape(data_pos)
+
+        for i in range(l):
+            Tglob = np.dot(Teef[i,:,:], Tx)
+            glob_1 = np.dot(Tglob, np.transpose(data_pos[i,:]))
+            self.txs_optimized[i,0:3] = np.transpose(glob_1[0:3])
 
 
     def dissipation(self, t1, data = None):
@@ -204,30 +235,35 @@ if __name__ == "__main__":
 
     optim = Fminsearch()
     #optim.load_set("./poses_ex.txt", "./tfs_ex.txt")
-    optim.load_set("./poses_optitrack.txt", "./tfs_optitrack.txt")
+    optim.load_set("./poses_optitrack_0001.txt", "./tfs_optitrack_0001.txt")
     #optim.load_set("../output/poses_tfs.txt", "../output/base_tfs.txt")
 
-    # t1 = np.asarray([-0.033,-0.017,0.075,0,0,0.7068252, 0.7073883])
+    t1 = np.asarray([-0.033,-0.017,0.075,0,0,-0.7068252, 0.7073883])
     # t1 = np.asarray([0.03,0,0.08,0,0,0., 1.])
-    t1 = np.asarray([0,0,0,0,0,0,1])
-    topt, f = optim.do_optimise_T(t1)
+    # t1 = np.asarray([0,0,0,0,0,0,1])
+    for i in range(10):
+        topt, f = optim.do_optimise_T(t1)
 
-    q = topt[3:]
-    q /= np.linalg.norm(q)
+        q = topt[3:]
+        q /= np.linalg.norm(q)
 
-    topt[3:] = q
+        topt[3:] = q
+        t1 = topt
 
-    print("Optimal transformation")
-    print(topt)
+        print("Optimal transformation")
+        print(topt)
 
-    print("dissipation with T used:")
-    print(optim.dissipation(t1)/30.)
-    print("dissipation with T optimized:")
-    print(optim.dissipation(topt)/30.)
+        print("dissipation with T used:")
+        print(optim.dissipation(t1)/30.)
+        print("dissipation with T optimized:")
+        print(optim.dissipation(topt)/30.)
 
     # p1 = [0,0,0]
     # r1 = np.eye(3)
-
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    optim.transformInputData(topt)
+    optim.plot_inputs(ax)
+    plt.show()
     # optim.do_optimise_pos_random(p1,r1,10)
     
-    pass

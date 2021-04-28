@@ -33,8 +33,8 @@ class RsListener(object):
 
     self.tfBuffer = tf2_ros.Buffer()
     self.listener = tf2_ros.TransformListener(self.tfBuffer)
-    self.base_frame = "base_link"
-    self.eef_frame = "optitrack"
+    self.base_frame = "optitrack"
+    self.eef_frame = "base_link"
 
     self.pcmsg = None
     self.imgmsg = None
@@ -65,6 +65,14 @@ class RsListener(object):
     self.tfs = None
 
 
+  def record_new_tf(self):
+      try:
+          self.tf = self.tfBuffer.lookup_transform(self.base_frame, self.eef_frame, rospy.Time())
+          return True
+      except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+          rospy.logwarn("Error looking up transform from base frame: {}  to eef frame: {}. Check TF publisher.".format(self.base_frame, self.eef_frame))
+          return False
+      
 
   def record_new_pose(self, msg):
       try:
@@ -127,6 +135,7 @@ def main():
                 cv_image = listener.bridge.imgmsg_to_cv2(listener.imgmsg, desired_encoding='passthrough')
                 gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
                 print("Hello from detector")
+
                 tags = listener.detector.detect(gray)
                 if len(tags) > 0:
                 # try:
@@ -159,10 +168,14 @@ def main():
                     # Check if last_x and last_y are in pcarray bounds
                     pc_size = np.shape(pcarray)
                     if last_x >= pc_size[0]:
-                        print("Bound {} >= {}, continue".format(last_x, px_size[0]))
+                        print("Bound {} >= {}, continue".format(last_x, pc_size[0]))
+                        listener.flag_record = False
+                        listener.pcmsg = None
                         continue
                     if last_y >= pc_size[1]:
-                        print("Bound {} >= {}, continue".format(last_y, px_size[1]))
+                        print("Bound {} >= {}, continue".format(last_y, pc_size[1]))
+                        listener.flag_record = False 
+                        listener.pcmsg = None
                         continue
 
                     point = pcarray[last_x, last_y]
@@ -170,12 +183,14 @@ def main():
                     # Check if point is nan
                     if math.isnan(point[0]) or math.isnan(point[1]) or math.isnan(point[2]):
                         print("Detected point invalid, continue...")
+                        listener.flag_record = False 
+                        listener.pcmsg = None
                         continue
 
                     points.append([point[0], point[1], point[2]])
                     
                     print(points)
-
+                    
                     if not listener.points:
                         listener.points = [points]
                         listener.tfs = [listener.tf]
