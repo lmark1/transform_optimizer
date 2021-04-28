@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import numpy as np
 import scipy.optimize
 import scipy
@@ -98,9 +98,9 @@ class Fminsearch:
         # data = data[(0,1,2,4,5),:]
         # tf = tf[(0,1,2,4,5),:]
         print("printing data")
-        print data
+        print(data)
         print("camera poses")
-        print tf
+        print(tf)
 
         objectiveFunLambda = lambda x: self.objectiveFunTransformation(x, data, tf)
 
@@ -181,30 +181,31 @@ class Fminsearch:
 
         mtrx = self.txs_optimized.transpose()
         pos_vec = []
-        m,n,l = np.shape(mtrx)
-        for i in range(l):
-            m = mtrx[:,:,i]
-            pos = m[0:3,3]
-            quat = quaternion_from_matrix(m)
-            pos_quat = []
-            for p in pos:
-                pos_quat.append(p)
-            for q in quat:
-                pos_quat.append(q)
-            p_vec = pos_q_2_pos_vec(pos_quat)
-            pos_vec.append(p_vec)
-
+        m,n = np.shape(mtrx)
+        print (m,n)
+        for i in range(n):
+            m = mtrx[0:3,i]
+            # pos = m[0:3]
+            # quat = quaternion_from_matrix(m)
+            # pos_quat = []
+            # for p in pos:
+            #     pos_quat.append(p)
+            # for q in quat:
+            #     pos_quat.append(q)
+            # p_vec = pos_q_2_pos_vec(pos_quat)
+            # pos_vec.append(p_vec)
+            pos_vec.append(m)
 
         cm = np.asarray(pos_vec)
-        ax1.quiver(cm[:,0], cm[:,1], cm[:,2], cm[:,3], cm[:,4], cm[:,5], color=col)
+        ax1.scatter(cm[:,0], cm[:,1], cm[:,2], color=col)
 
 if __name__ == "__main__":
 
 
     optim = Fminsearch()
     #optim.load_set("./poses_ex.txt", "./tfs_ex.txt")
-    #optim.load_set("./poses_ex_optitrack.txt", "./tfs_ex_optitrack.txt")
-    optim.load_set("../output/poses_tfs.txt", "../output/base_tfs.txt")
+    optim.load_set("./poses_optitrack.txt", "./tfs_optitrack.txt")
+    #optim.load_set("../output/poses_tfs.txt", "../output/base_tfs.txt")
 
     # t1 = np.asarray([-0.033,-0.017,0.075,0,0,0.7068252, 0.7073883])
     # t1 = np.asarray([0.03,0,0.08,0,0,0., 1.])
@@ -228,5 +229,5 @@ if __name__ == "__main__":
     # r1 = np.eye(3)
 
     # optim.do_optimise_pos_random(p1,r1,10)
-
+    
     pass
