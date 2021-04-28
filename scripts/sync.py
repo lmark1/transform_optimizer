@@ -44,15 +44,15 @@ class RsListener(object):
     self.detector = Detector()
 
     # image_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
-    image_sub = message_filters.Subscriber('/camera/color/image_rect_color', Image)
-    pc_sub = message_filters.Subscriber('/camera/depth_registered/points', PointCloud2)
+    image_sub = message_filters.Subscriber('camera/color/image_rect_color', Image)
+    pc_sub = message_filters.Subscriber('camera/depth_registered/points', PointCloud2)
 
     rospy.sleep(2.0)
 
     # subscriber to topic announcing new pose for AT recording
-    s1 = rospy.Subscriber('/record_apriltag', Bool, self.record_new_pose)
+    s1 = rospy.Subscriber('record_apriltag', Bool, self.record_new_pose)
     # save all saved AT positions and hand poses for camera/hand calibration
-    s2 = rospy.Subscriber('/apriltags_done', Bool, self.poses_done)
+    s2 = rospy.Subscriber('apriltags_done', Bool, self.poses_done)
     self.flag_record = False
 
     # self.pose_pub = rospy.Publisher('/pose', Float64MultiArray, queue_size=1)
@@ -71,7 +71,7 @@ class RsListener(object):
           self.flag_record = True
       except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
           rospy.logwarn("Error looking up transform from base frame: {}  to eef frame: {}. Check TF publisher.".format(self.base_frame, self.eef_frame))
-          self.flag_record = msg.data 
+          self.flag_record = False 
 
       print("did we get tf?")
       print(self.flag_record)
