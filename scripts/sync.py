@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
+import math
 
 import numpy as np
 import cv2
@@ -154,9 +155,25 @@ def main():
                     points = []
                     last_x = x[4]
                     last_y = y[4]
-                    point = pcarray[last_x, last_y]
-                    points.append([point[0], point[1], point[2]])
 
+                    # Check if last_x and last_y are in pcarray bounds
+                    pc_size = np.shape(pcarray)
+                    if last_x >= pc_size[0]:
+                        print("Bound {} >= {}, continue".format(last_x, px_size[0]))
+                        continue
+                    if last_y >= pc_size[1]:
+                        print("Bound {} >= {}, continue".format(last_y, px_size[1]))
+                        continue
+
+                    point = pcarray[last_x, last_y]
+                    
+                    # Check if point is nan
+                    if math.isnan(point[0]) or math.isnan(point[1]) or math.isnan(point[2]):
+                        print("Detected point invalid, continue...")
+                        continue
+
+                    points.append([point[0], point[1], point[2]])
+                    
                     print(points)
 
                     if not listener.points:
